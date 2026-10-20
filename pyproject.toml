@@ -1,0 +1,115 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "g1-factory"
+version = "0.1.0"
+description = "G1 Factory"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE.md", "THIRD_PARTY_LICENSES.md", "THIRD_PARTY_NOTICES.md"]
+requires-python = "==3.12.*"
+dependencies = [
+    "av",
+    "isaaclab-arena",
+]
+
+[dependency-groups]
+gr00t-client = [
+    "gr00t==0.1.0",
+    "msgpack==1.1.0",
+    "msgpack-numpy==0.4.8",
+    "pyzmq==27.0.1",
+]
+isaaclab-from-source = [
+    "isaaclab[isaacsim]",
+    "isaaclab-assets",
+    "isaaclab-contrib",
+    "isaaclab-experimental",
+    "isaaclab-mimic",
+    "isaaclab-newton[all]",
+    "isaaclab-ov",
+    "isaaclab-ovphysx",
+    "isaaclab-physx[newton]",
+    "isaaclab-ppisp",
+    "isaaclab-rl[rsl-rl]",
+    "isaaclab-tasks",
+    "isaaclab-tasks-experimental",
+    "isaaclab-teleop",
+    "isaaclab-visualizers[newton,rerun]",
+    "torch==2.10.0",
+    "torchvision==0.25.0",
+    "torchaudio==2.10.0",
+]
+
+[tool.uv]
+default-groups = ["gr00t-client", "isaaclab-from-source"]
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+python-preference = "only-managed"
+prerelease = "if-necessary-or-explicit"
+index-strategy = "first-index"
+override-dependencies = [
+    "torch==2.10.0",
+    "torchvision==0.25.0",
+    "torchaudio==2.10.0",
+    "numpy==2.3.1",
+    "coverage==7.4.4",
+    "packaging==26.0",
+    "websockets==16.1.1",
+]
+constraint-dependencies = [
+    "pin-pink==3.3.0",
+    "pyglet<3",
+    "tinyobjloader==2.0.0rc13",
+    "mujoco-usd-converter==0.2.0",
+]
+
+[[tool.uv.dependency-metadata]]
+name = "gr00t"
+version = "0.1.0"
+requires-dist = []
+
+[[tool.uv.index]]
+url = "https://pypi.nvidia.com"
+explicit = false
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+gr00t = { path = "submodules/Isaac-GR00T", editable = true }
+isaaclab-arena = { path = "submodules/IsaacLab-Arena", editable = true }
+isaaclab = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab", editable = true }
+isaaclab-assets = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_assets", editable = true }
+isaaclab-contrib = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_contrib", editable = true }
+isaaclab-experimental = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_experimental", editable = true }
+isaaclab-mimic = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_mimic", editable = true }
+isaaclab-newton = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_newton", editable = true }
+isaaclab-ov = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_ov", editable = true }
+isaaclab-ovphysx = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_ovphysx", editable = true }
+isaaclab-physx = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_physx", editable = true }
+isaaclab-ppisp = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_ppisp", editable = true }
+isaaclab-rl = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_rl", editable = true }
+isaaclab-tasks = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_tasks", editable = true }
+isaaclab-tasks-experimental = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_tasks_experimental", editable = true }
+isaaclab-teleop = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_teleop", editable = true }
+isaaclab-visualizers = { path = "submodules/IsaacLab-Arena/submodules/IsaacLab/source/isaaclab_visualizers", editable = true }
+mujoco-usd-converter = { index = "pypi" }
+isaacteleop = { index = "pypi" }
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
+
+[tool.setuptools.packages.find]
+include = ["g1_factory*"]
+
+[tool.setuptools.package-data]
+g1_factory = ["configs/**/*.yaml"]

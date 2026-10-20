@@ -1,0 +1,34 @@
+**/build
+
+# IDE stuff
+*.vscode
+*.*~
+
+# Python
+*.pyc
+**/*.egg-info
+**/__pycache__
+
+# Logs
+*logs/
+
+# outputs
+*outputs/
+
+# Models
+*models/
+
+# Datasets
+*datasets/
+
+# Local dependencies
+/third_party/
+
+# Training logs and outputs
+*wandb/
+
+core
+core.*
+
+# venvs
+.venv/

@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+# Arena-side GR00T N1.7 client configuration. The model path is supplied to
+# the standalone GR00T server.
+language_instruction: "Move the power drill from one table to another"
+action_horizon: 40
+embodiment_tag: NEW_EMBODIMENT
+video_backend: decord
+modality_config_path: submodules/IsaacLab-Arena/isaaclab_arena_gr00t/embodiments/g1/g1_sim_wbc_data_gr00t_n_1_7_config.py
+
+policy_joints_config_path: submodules/IsaacLab-Arena/isaaclab_arena_gr00t/embodiments/g1/gr00t_43dof_joint_space.yaml
+action_joints_config_path: submodules/IsaacLab-Arena/isaaclab_arena_gr00t/embodiments/g1/43dof_joint_space.yaml
+state_joints_config_path: submodules/IsaacLab-Arena/isaaclab_arena_gr00t/embodiments/g1/43dof_joint_space.yaml
+
+action_chunk_length: 40
+pov_cam_name_sim: "robot_head_cam_rgb"
+
+original_image_size: [480, 640, 3]
+target_image_size: [480, 640, 3]
+
+task_mode_name: g1_locomanipulation
