@@ -21,6 +21,11 @@
 
 **G1 Factory** is a whole-body humanoid locomanipulation benchmark for industrial
 tasks built on [Isaac Lab-Arena](https://github.com/isaac-sim/IsaacLab-Arena).
+It adapts the nine tasks introduced in
+[HumanoidMimicGen](https://humanoidmimicgen.github.io/) to Isaac Lab-Arena.
+The benchmark is featured in the
+[Isaac Lab 3.0 release](https://github.com/isaac-sim/IsaacLab/releases/tag/v3.0.0)
+and [Isaac RLPT](https://github.com/nvidia-isaac/isaac-rlpt).
 It supports human demonstration collection,
 [GR00T N1.7](https://github.com/NVIDIA/Isaac-GR00T) fine-tuning, and standardized
 closed-loop policy evaluation.
@@ -28,7 +33,9 @@ closed-loop policy evaluation.
 **The benchmark includes:**
 
 - **Benchmark tasks** — Nine industrial locomanipulation tasks.
-- **Demonstration datasets** — 100 demonstrations per task.
+- **Simulation assets** — [G1 Factory assets](https://huggingface.co/datasets/nvidia/G1-Factory).
+- **Demonstration dataset** — [100 demonstrations per task in LeRobot format](https://huggingface.co/datasets/nvidia/G1-Factory-Benchmark).
+- **Pretrained policy** — [GR00T N1.7 fine-tuned across all nine tasks](https://huggingface.co/nvidia/G1-Factory-GR00T-1.7).
 - **Closed-loop evaluation** — Standardized policy evaluation through Isaac Lab-Arena.
 
 **The benchmark workflow has three stages:**
@@ -42,17 +49,31 @@ the supported tasks.
 
 ## Setup
 
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+and [Git LFS](https://git-lfs.com/).
+
 ### Clone the repository
 
 Clone G1 Factory and initialize its required submodules:
 
 ```bash
+git lfs install
 git clone https://github.com/NVlabs/G1-Factory.git
 cd G1-Factory
 git -c url."https://github.com/".insteadOf=git@github.com: submodule update --init \
   submodules/IsaacLab-Arena submodules/Isaac-GR00T
 git -C submodules/IsaacLab-Arena -c url."https://github.com/".insteadOf=git@github.com: \
   submodule update --init submodules/IsaacLab
+```
+
+### Download simulation assets
+
+Download the [G1 Factory assets](https://huggingface.co/datasets/nvidia/G1-Factory)
+from the repository root:
+
+```bash
+mkdir -p datasets
+git clone https://huggingface.co/datasets/nvidia/G1-Factory datasets/assets
 ```
 
 ### Set up G1 Factory
@@ -66,10 +87,23 @@ source .venv/bin/activate
 
 ### Set up NVIDIA Isaac GR00T
 
+Install FFmpeg:
+
+```bash
+sudo apt-get update && sudo apt-get install -y ffmpeg
+```
+
 Set up Isaac GR00T for fine-tuning and inference:
 
 ```bash
 uv sync --project submodules/Isaac-GR00T
+```
+
+GR00T requires access to its [Cosmos-Reason2-2B backbone](https://huggingface.co/nvidia/Cosmos-Reason2-2B).
+Request access on the model page and authenticate before fine-tuning or inference:
+
+```bash
+uv run --project submodules/Isaac-GR00T hf auth login
 ```
 
 ### Select a task
@@ -165,25 +199,26 @@ language instruction, and image sizes. Update it for the selected task and datas
 
 ### Download demonstrations
 
-The [G1 Factory Benchmark dataset](https://huggingface.co/datasets/masoudmoghani/G1-Factory-Benchmark)
-provides 100 demonstrations per task in LeRobot format. Download it to `datasets/`:
+The [G1 Factory Benchmark dataset](https://huggingface.co/datasets/nvidia/G1-Factory-Benchmark)
+provides 100 demonstrations per task in LeRobot format and can be used directly
+for fine-tuning. Download it from the repository root:
 
 ```bash
-git clone https://huggingface.co/datasets/masoudmoghani/G1-Factory-Benchmark datasets/G1-Factory-Benchmark
+git clone https://huggingface.co/datasets/nvidia/G1-Factory-Benchmark datasets/G1-Factory-Benchmark
 ```
 
 ---
 
 ## 5. Fine-Tuning (GR00T N1.7)
 
-Fine-tune GR00T N1.7 on the selected dataset:
+Fine-tune GR00T N1.7 on the selected task in the released dataset:
 
 ```bash
 cd "${ARENA_REPO_DIR}/submodules/Isaac-GR00T"
 CUDA_VISIBLE_DEVICES=0 uv run python gr00t/experiment/launch_finetune.py \
   --base-model-path nvidia/GR00T-N1.7-3B \
-  --dataset-path /path/to/task/lerobot \
-  --output-dir /path/to/output \
+  --dataset-path "${ARENA_REPO_DIR}/datasets/G1-Factory-Benchmark/datasets/${TASK}/lerobot" \
+  --output-dir "${ARENA_REPO_DIR}/models/${TASK}_n17" \
   --modality-config-path "${ARENA_REPO_DIR}/submodules/IsaacLab-Arena/isaaclab_arena_gr00t/embodiments/g1/g1_sim_wbc_data_gr00t_n_1_7_config.py" \
   --embodiment-tag NEW_EMBODIMENT \
   --global-batch-size 12 \
@@ -200,6 +235,14 @@ For multitask training, pass dataset paths separated by `:` to `--dataset-path`.
 
 Evaluation requires two terminals: one Isaac GR00T N1.7 server and one Isaac Lab-Arena simulation client.
 
+To evaluate the [released GR00T N1.7 policy](https://huggingface.co/nvidia/G1-Factory-GR00T-1.7),
+download it from the repository root:
+
+```bash
+mkdir -p models
+git clone https://huggingface.co/nvidia/G1-Factory-GR00T-1.7 models/G1-Factory-GR00T-1.7
+```
+
 ### Terminal 1: Isaac GR00T N1.7 Server
 
 From the repository root, start the GR00T policy server:
@@ -207,12 +250,14 @@ From the repository root, start the GR00T policy server:
 ```bash
 cd submodules/Isaac-GR00T
 uv run python gr00t/eval/run_gr00t_server.py \
-  --model-path /path/to/model \
+  --model-path ../../models/G1-Factory-GR00T-1.7 \
   --embodiment-tag NEW_EMBODIMENT \
   --device cuda \
   --host 0.0.0.0 \
   --port 5555
 ```
+
+To evaluate your own fine-tuned policy, set `--model-path` to its checkpoint directory.
 
 ### Terminal 2: Isaac Lab-Arena Simulation Client
 
